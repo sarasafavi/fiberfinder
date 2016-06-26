@@ -6,6 +6,11 @@ from argparse import ArgumentParser
 import geojson
 import requests
 
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
+
+
 def parse_args(args):
     usage = "Make a map of apartments & condos in Austin with Google Fiber"
     parser = ArgumentParser(usage=usage)
@@ -36,6 +41,7 @@ def parse_args(args):
 
 
 def get_all_locs(metaurl):
+    logger.info("Fetching latest location data from Google...")
     meta = requests.get(metaurl)
     meta = meta.json()
     updated = meta.get("updated", "Unknown date")
@@ -43,9 +49,11 @@ def get_all_locs(metaurl):
     try:
         url = meta["mediaLink"]
     except KeyError:
+        logger.error("No current data available.")
         return None
 
     all_locs = requests.get(url)
+    logger.info("Location data last updated on {}".format(updated))
     return all_locs.json()
 
 
@@ -53,7 +61,7 @@ def _main(args):
     opts = parse_args(args)
 
     if os.path.exists(opts.out) and opts.overwrite is False:
-        logging.error(
+        logger.error(
             ("Output already exists: "
              "either specify a new output filename, or use '--overwrite'")
         )
@@ -73,6 +81,8 @@ def _main(args):
 
     with open("atx_fiber_apts.json", "w") as out:
         out.write(geojson.dumps(geojson.FeatureCollection(ready_apts)))
+        logger.info("Map created at {}".format(opts.out))
+
     return 0
 
 
