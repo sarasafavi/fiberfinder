@@ -1,10 +1,10 @@
 import os
 import sys
-import json
 import logging
 from argparse import ArgumentParser
 
 import geojson
+import requests
 
 def parse_args(args):
     usage = "Make a map of apartments & condos in Austin with Google Fiber"
@@ -19,6 +19,13 @@ def parse_args(args):
     )
 
     parser.add_argument(
+        "--url",
+        dest="url",
+        default="https://www.googleapis.com/storage/v1/b/fiber/o/property-manager%2FAustin1.json",  # noqa
+        help="metadata URL"
+    )
+
+    parser.add_argument(
         "--overwrite",
         action="store_true",
         default=False,
@@ -28,10 +35,18 @@ def parse_args(args):
     return parser.parse_args(args)
 
 
-def get_all_locs():
-    with open("fiber.json") as f:
-        apts = json.load(f)
-    return apts
+def get_all_locs(metaurl):
+    meta = requests.get(metaurl)
+    meta = meta.json()
+    updated = meta.get("updated", "Unknown date")
+
+    try:
+        url = meta["mediaLink"]
+    except KeyError:
+        return None
+
+    all_locs = requests.get(url)
+    return all_locs.json()
 
 
 def _main(args):
@@ -44,6 +59,9 @@ def _main(args):
         )
         return 1
 
+    all_current_apts = get_all_locs(opts.url)
+    if not all_current_apts:
+        return 1
     all_current_apts = get_all_locs()
 
     ready_apts = []
@@ -55,6 +73,8 @@ def _main(args):
 
     with open("atx_fiber_apts.json", "w") as out:
         out.write(geojson.dumps(geojson.FeatureCollection(ready_apts)))
+    return 0
+
 
 def main():
-   sys.exit(_main(sys.argv[1:]) or 0)
+    sys.exit(_main(sys.argv[1:]) or 0)
