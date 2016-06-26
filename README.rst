@@ -38,3 +38,8 @@ Wait this isn't a map, this is a JSON file...
 ##############################################
 Throw the output file in a `gist <https://gist.github.com>`_ or open it at
 `geojson.io <http://geojson.io/>`_.  *MAGIC.*
+
+Ain't nobody got time for that, just give me the map please
+#############################################################
+
+`See this repo's map in action here. <https://github.com/sarasafavi/fiberfinder/blob/master/atx_fiber_05-26-16.geojson>`_
