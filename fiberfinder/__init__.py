@@ -70,7 +70,6 @@ def _main(args):
     all_current_apts = get_all_locs(opts.url)
     if not all_current_apts:
         return 1
-    all_current_apts = get_all_locs()
 
     ready_apts = []
     for apt in all_current_apts:
@@ -79,7 +78,7 @@ def _main(args):
                                   apt.get("Latitude", 0.0)))
             ready_apts.append(geojson.Feature(geometry=geom, properties=apt))
 
-    with open("atx_fiber_apts.json", "w") as out:
+    with open(opts.out, "w") as out:
         out.write(geojson.dumps(geojson.FeatureCollection(ready_apts)))
         logger.info("Map created at {}".format(opts.out))
 
