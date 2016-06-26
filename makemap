@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+
+from fiber import main
+
+main()
